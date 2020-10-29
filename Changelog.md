@@ -29,6 +29,7 @@ Compiler Features:
 
 Bugfixes:
  * AST Import: For constructors, a public visibility is ignored during importing.
+ * References Resolver: Detect circular references to other contracts across libraries and free functions
  * Error Reporter: Fix handling of carriage return.
  * SMTChecker: Fix internal error in BMC on resolving virtual functions inside branches.
  * SMTChecker: Fix internal error on ``array.pop`` nested inside 1-tuple.
