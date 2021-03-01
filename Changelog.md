@@ -7,6 +7,7 @@ Compiler Features:
  * Command Line Interface: Drop experimental support for ``--machine evm15``.
  * Optimizer: Try to move ``and`` with constant inside ``or`` to improve storage writes of small types.
  * Optimizer: Replace multiplications and divisions with powers of two by shifts.
+ * Yul Optimizer: Evaluate ``keccak256(a, c)``, when the value at memory location ``a`` is known at compile time and ``c`` is a constant ``<= 32``.
 
 
 Bugfixes:
