@@ -47,7 +47,8 @@ enum AssemblyItemType {
 	PushLibraryAddress, ///< Push a currently unknown address of another (library) contract.
 	PushDeployTimeAddress, ///< Push an address to be filled at deploy time. Should not be touched by the optimizer.
 	PushImmutable, ///< Push the currently unknown value of an immutable variable. The actual value will be filled in by the constructor.
-	AssignImmutable ///< Assigns the current value on the stack to an immutable variable. Only valid during creation code.
+	AssignImmutable, ///< Assigns the current value on the stack to an immutable variable. Only valid during creation code.
+	VerbatimData
 };
 
 class Assembly;
@@ -75,6 +76,12 @@ public:
 		else
 			m_data = std::make_shared<u256>(std::move(_data));
 	}
+	explicit AssemblyItem(bytes const& _verbatimData, int _deposit):
+		m_type(VerbatimData),
+		m_instruction{},
+		m_verbatimData{{_deposit, _verbatimData}}
+	{}
+
 	AssemblyItem(AssemblyItem const&) = default;
 	AssemblyItem(AssemblyItem&&) = default;
 	AssemblyItem& operator=(AssemblyItem const&) = default;
@@ -95,6 +102,8 @@ public:
 	u256 const& data() const { assertThrow(m_type != Operation, util::Exception, ""); return *m_data; }
 	void setData(u256 const& _data) { assertThrow(m_type != Operation, util::Exception, ""); m_data = std::make_shared<u256>(_data); }
 
+	bytes const& verbatimData() const { assertThrow(m_type == VerbatimData, util::Exception, ""); return m_verbatimData->second; }
+
 	/// @returns the instruction of this item (only valid if type() == Operation)
 	Instruction instruction() const { assertThrow(m_type == Operation, util::Exception, ""); return m_instruction; }
 
@@ -105,6 +114,8 @@ public:
 			return false;
 		if (type() == Operation)
 			return instruction() == _other.instruction();
+		else if (type() == VerbatimData)
+			return *m_verbatimData == *_other.m_verbatimData;
 		else
 			return data() == _other.data();
 	}
@@ -116,6 +127,8 @@ public:
 			return type() < _other.type();
 		else if (type() == Operation)
 			return instruction() < _other.instruction();
+		else if (type() == VerbatimData)
+			return *m_verbatimData == *_other.m_verbatimData;
 		else
 			return data() < _other.data();
 	}
@@ -137,7 +150,7 @@ public:
 	size_t bytesRequired(size_t _addressLength) const;
 	size_t arguments() const;
 	size_t returnValues() const;
-	size_t deposit() const { return returnValues() - arguments(); }
+	size_t deposit() const { return m_type == VerbatimData ? static_cast<size_t>(m_verbatimData->first) : returnValues() - arguments(); }
 
 	/// @returns true if the assembly item can be used in a functional context.
 	bool canBeFunctional() const;
@@ -162,6 +175,7 @@ private:
 	AssemblyItemType m_type;
 	Instruction m_instruction; ///< Only valid if m_type == Operation
 	std::shared_ptr<u256> m_data; ///< Only valid if m_type != Operation
+	std::optional<std::pair<int, bytes>> m_verbatimData; ///< Only valid for m_type == VerbatimData
 	langutil::SourceLocation m_location;
 	JumpType m_jumpType = JumpType::Ordinary;
 	/// Pushed value for operations with data to be determined during assembly stage,

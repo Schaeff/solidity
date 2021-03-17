@@ -38,6 +38,7 @@ bool SemanticInformation::breaksCSEAnalysisBlock(AssemblyItem const& _item, bool
 	case Tag:
 	case PushDeployTimeAddress:
 	case AssignImmutable:
+	case VerbatimData:
 		return true;
 	case Push:
 	case PushString:

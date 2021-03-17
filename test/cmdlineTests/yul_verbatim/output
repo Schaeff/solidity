@@ -1,0 +1,26 @@
+
+======= yul_verbatim/input.yul (EVM) =======
+
+Pretty printed source:
+object "object" {
+    code {
+        {
+            sstore(verbatim_2_1("abc", 2, 0), 2)
+        }
+    }
+}
+
+
+Binary representation:
+60026000600261626355
+
+Text representation:
+    /* "yul_verbatim/input.yul":15:16   */
+  0x02
+    /* "yul_verbatim/input.yul":30:39   */
+  0x00
+    /* "yul_verbatim/input.yul":15:16   */
+  0x02
+  verbatimdata_-1_616263
+    /* "yul_verbatim/input.yul":83:95   */
+  sstore
