@@ -352,6 +352,7 @@ SOLTMPDIR=$(mktemp -d)
     set -e
     cd "$SOLTMPDIR"
     "$REPO_ROOT"/scripts/isolate_tests.py "$REPO_ROOT"/docs/ docs
+    developmentVersion=$("$REPO_ROOT/scripts/get_version.sh")
 
     for f in *.sol
     do
@@ -377,6 +378,12 @@ SOLTMPDIR=$(mktemp -d)
         if grep "This may report a warning" "$f" >/dev/null
         then
             opts+=(-o)
+        fi
+
+        if grep "pragma solidity ^$developmentVersion\|pragma solidity >=$developmentVersion" "$f" >/dev/null
+        then
+            echo "pragma solidity >0.0.1;" > "temp.sol"
+            grep -v "pragma solidity ^$developmentVersion\|pragma solidity >=$developmentVersion" "$f" >> "temp.sol" && mv "temp.sol" "$f"
         fi
         compileFull "${opts[@]}" "$SOLTMPDIR/$f"
     done
